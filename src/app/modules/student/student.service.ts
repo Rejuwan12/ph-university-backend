@@ -1,6 +1,6 @@
 import { Error } from 'mongoose';
 import { TStudent } from './student.interface';
-import { Student } from './../student.model';
+import { Student } from './../student/student.model';
 
 const createStudentIntoDB = async (studentData: TStudent) => {
   if (await Student.isUserExists(studentData.id)) {
