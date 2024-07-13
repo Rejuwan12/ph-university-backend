@@ -9,9 +9,6 @@ import {
   TUserName,
 } from './../student/student.interface';
 
-import bcrypt from 'bcrypt'
-import config from '../../config';
-
 
 const studentNameSchema = new Schema<TUserName>({
   firstName: {
@@ -83,7 +80,12 @@ const localGuardianSchema = new Schema<TLocalGuardian>({
 // 2. Create a Schema corresponding to the document interface.
 const studentSchema = new Schema<TStudent, StudentModel>({
   id: { type: String, required: [true, 'id is required'], unique: true },
-  password: { type: String, required: [true, 'password is required'],maxlength:[20,'password cannot be more then 20 character'] },
+  user:{
+     type: Schema.Types.ObjectId,
+     required: [true, 'user id is required'],
+     unique:true,
+     ref:"User"
+  },
   name: {
     type: studentNameSchema,
     required: true,
@@ -137,11 +139,7 @@ const studentSchema = new Schema<TStudent, StudentModel>({
   profileImg: {
     type: String,
   },
-  isActive: {
-    type: String,
-    enum: ['active', 'blocked'],
-    default: 'active',
-  },
+ 
   isDeleted:{
     type:Boolean,
     default:false
@@ -160,25 +158,12 @@ const studentSchema = new Schema<TStudent, StudentModel>({
       return existingUser;
   }
 
-  
 // virtual
   studentSchema.virtual('fullName').get(function(){
     return `${this.name.firstName} ${this.name.middleName} ${this.name.lastName}`
   })
 
-// pre save middleware / hook
 
-studentSchema.pre('save', async function(next){
-  const user = this;
- user.password = await bcrypt.hash(user.password,Number(config.bcrypt_salt_rounds))
-  // console.log(this, 'pre hook : we will save the data');
-  next()
-})
-studentSchema.post('save', function(doc, next){
-  doc.password= '';
-  next()
- 
-})
 
 // query middleware 
 
